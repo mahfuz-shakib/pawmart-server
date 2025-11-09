@@ -99,9 +99,14 @@ async function run() {
     app.get("/products", async (req, res) => {
       console.log(req.query);
       const email = req.query.email;
+      const category = req.query.category;
       const query = {};
       if (email) {
         query.email = email;
+      }
+      else if(category)
+      {
+        query.category = category;
       }
       const cursor = productsCollection.find(query).sort({
         date: -1,
@@ -146,7 +151,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/bids", async (req, res) => {
+    app.get("/orders", async (req, res) => {
       const email = req.query.email;
       console.log(email);
       const query = {};
@@ -157,7 +162,7 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result);
     });
-    app.get("/bids/:id", async (req, res) => {
+    app.get("/orders/:id", async (req, res) => {
       const product = req.params.id;
       console.log(product);
       const query = {};
@@ -168,7 +173,7 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result);
     });
-    app.post("/bids", async (req, res) => {
+    app.post("/orders", async (req, res) => {
       const bid = req.body;
       const result = await bidsCollection.insertOne(bid);
       res.send(result);
