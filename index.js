@@ -90,22 +90,22 @@ async function run() {
 
     // product related apis
     app.get("/recentProducts", async (req, res) => {
-      const cursor = productsCollection.find().sort({
-        date: -1,
-      }).limit(6);
+      const cursor = productsCollection
+        .find()
+        .sort({
+          date: -1,
+        })
+        .limit(6);
       const result = await cursor.toArray();
       res.send(result);
     });
     app.get("/products", async (req, res) => {
-      console.log(req.query);
       const email = req.query.email;
       const category = req.query.category;
       const query = {};
       if (email) {
         query.email = email;
-      }
-      else if(category)
-      {
+      } else if (category && category != "All Categories") {
         query.category = category;
       }
       const cursor = productsCollection.find(query).sort({
@@ -114,10 +114,16 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result);
     });
+    app.get('/search',async(req,res)=>{
+      const search = req.query.search;
+      const query ={name: {$regex:search,$options:'i'}};
+      const result = await productsCollection.find(query).toArray();
+      console.log(result);
+      res.send(result)
+    })
     app.get("/products/:productId", async (req, res) => {
       const id = req.params.productId;
       const query = { _id: id };
-      console.log(query);
       const result = await productsCollection.findOne(query);
       console.log(result);
       res.send(result);
@@ -153,7 +159,6 @@ async function run() {
 
     app.get("/orders", async (req, res) => {
       const email = req.query.email;
-      console.log(email);
       const query = {};
       if (email) {
         query.buyer_email = email;
