@@ -157,6 +157,25 @@ async function run() {
       const result = await productsCollection.deleteOne(query);
       res.send(result);
     });
+    app.patch("/products/:productId", async (req, res) => {
+      const id = req.params.productId;
+      const query = { _id: new ObjectId(id) };
+      const update={
+        $set:{
+          name: req.body.name,
+          category: req.body.category,
+          price: req.body.price,
+          location: req.body.location,
+          description: req.body.description,
+          image: req.body.photo,
+          email: req.body.email,
+          date: req.body.date,
+        }
+      }
+      console.log(update);
+      const result = await productsCollection.updateOne(query,update);
+      res.send(result);
+    });
 
     app.get("/orders", async (req, res) => {
       const email = req.query.email;
