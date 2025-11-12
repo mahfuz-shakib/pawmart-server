@@ -1,15 +1,16 @@
 const express = require("express");
 const cors = require("cors");
+require('dotenv').config()
 const { MongoClient, ServerApiVersion, CURSOR_FLAGS, ObjectId } = require("mongodb");
 
 const app = express();
 const port = process.env.PORT || 3000;
-
+// console.log(process.env);
 // middleware
 app.use(cors());
 app.use(express.json());
 
-const uri = "mongodb+srv://simpleDbUser:OzfNDgDrL5W1LrAT@cluster0.pr7icaj.mongodb.net/?appName=Cluster0";
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.pr7icaj.mongodb.net/?appName=Cluster0`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -23,7 +24,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
 
     const pawmart = client.db("pawmart");
     const usersCollection = pawmart.collection("users");
@@ -38,10 +39,8 @@ async function run() {
       if (email) {
         query.email = email;
       }
-      console.log(query);
       const cursor = usersCollection.find(query);
       const result = await cursor.toArray();
-      console.log(result);
       res.send(result);
     });
     app.get("/users/:userId", async (req, res) => {
@@ -57,7 +56,6 @@ async function run() {
       const query = { email: email };
       const isExisting = await usersCollection.findOne(query);
       if (isExisting) {
-        console.log(isExisting, isExisting._id.toHexString());
         res.send({ message: "User already exist. Do not needed insert again", currentUser: isExisting });
       } else {
         const result = await usersCollection.insertOne(newUser);
@@ -82,11 +80,12 @@ async function run() {
 
     app.delete("/users/:userId", async (req, res) => {
       const id = req.params.userId;
-      console.log(id);
       const query = { _id: new ObjectId(id) };
       const result = await usersCollection.deleteOne(query);
       res.send(result);
     });
+
+
 
     // product related apis
     app.get("/recentProducts", async (req, res) => {
@@ -118,36 +117,18 @@ async function run() {
       const search = req.query.search;
       const query ={name: {$regex:search,$options:'i'}};
       const result = await productsCollection.find(query).toArray();
-      console.log(result);
       res.send(result)
     })
     app.get("/products/:productId", async (req, res) => {
       const id = req.params.productId;
-      const query = { _id: id };
+      const query = { _id: new ObjectId(id) };
       const result = await productsCollection.findOne(query);
-      console.log(result);
       res.send(result);
     });
 
     app.post("/products", async (req, res) => {
       const product = req.body;
-      console.log(product);
       const result = await productsCollection.insertOne(product);
-      res.send(result);
-    });
-
-    app.patch("/products/:productId", async (req, res) => {
-      const id = req.params.productId;
-      const updatedProduct = req.body;
-      const query = { _id: new ObjectId(id) };
-      const update = {
-        $set: {
-          name: updatedProduct.name,
-          price: updatedProduct.price,
-        },
-      };
-      const option = {};
-      const result = await productsCollection.updateOne(query, update, option);
       res.send(result);
     });
 
@@ -172,19 +153,21 @@ async function run() {
           date: req.body.date,
         }
       }
-      console.log(update);
       const result = await productsCollection.updateOne(query,update);
       res.send(result);
     });
 
+
+    // orders related apis
     app.get("/orders", async (req, res) => {
       const email = req.query.email;
       const query = {};
       if (email) {
-        query.buyer_email = email;
+        query.email = email;
       }
       const cursor = bidsCollection.find(query);
       const result = await cursor.toArray();
+      console.log(result);
       res.send(result);
     });
     app.get("/orders/:id", async (req, res) => {
@@ -205,7 +188,7 @@ async function run() {
     });
 
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
