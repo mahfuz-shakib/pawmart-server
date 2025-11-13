@@ -62,7 +62,7 @@ async function run() {
         res.send({ currentUser: result });
       }
     });
-
+  
     app.patch("/users/:userId", async (req, res) => {
       const id = req.params.userId;
       const updatedUser = req.body;
@@ -80,7 +80,7 @@ async function run() {
 
     app.delete("/users/:userId", async (req, res) => {
       const id = req.params.userId;
-      const query = { _id: new ObjectId(id) };
+      const query = {_id: new ObjectId(id) };
       const result = await usersCollection.deleteOne(query);
       res.send(result);
     });
