@@ -85,7 +85,6 @@ async function run() {
       res.send(result);
     });
 
-
     // product related apis
     app.get("/recentProducts", async (req, res) => {
       const cursor = productsCollection
@@ -191,7 +190,7 @@ async function run() {
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
-    // await client.close();
+    // await client.close(); 
   }
 }
 run().catch(console.dir);
