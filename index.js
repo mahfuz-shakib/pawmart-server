@@ -86,7 +86,6 @@ async function run() {
     });
 
 
-
     // product related apis
     app.get("/recentProducts", async (req, res) => {
       const cursor = productsCollection
