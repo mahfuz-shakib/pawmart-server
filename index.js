@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-require('dotenv').config()
+require("dotenv").config();
 const { MongoClient, ServerApiVersion, CURSOR_FLAGS, ObjectId } = require("mongodb");
 
 const app = express();
@@ -25,7 +25,7 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
-    
+
     const pawmart = client.db("pawmart");
     const usersCollection = pawmart.collection("users");
     const productsCollection = pawmart.collection("listings");
@@ -62,7 +62,7 @@ async function run() {
         res.send({ currentUser: result });
       }
     });
-  
+
     app.patch("/users/:userId", async (req, res) => {
       const id = req.params.userId;
       const updatedUser = req.body;
@@ -80,7 +80,7 @@ async function run() {
 
     app.delete("/users/:userId", async (req, res) => {
       const id = req.params.userId;
-      const query = {_id: new ObjectId(id) };
+      const query = { _id: new ObjectId(id) };
       const result = await usersCollection.deleteOne(query);
       res.send(result);
     });
@@ -111,12 +111,12 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result);
     });
-    app.get('/search',async(req,res)=>{
+    app.get("/search", async (req, res) => {
       const search = req.query.search;
-      const query ={name: {$regex:search,$options:'i'}};
+      const query = { name: { $regex: search, $options: "i" } };
       const result = await productsCollection.find(query).toArray();
-      res.send(result)
-    })
+      res.send(result);
+    });
     app.get("/products/:productId", async (req, res) => {
       const id = req.params.productId;
       const query = { _id: new ObjectId(id) };
@@ -139,8 +139,8 @@ async function run() {
     app.patch("/products/:productId", async (req, res) => {
       const id = req.params.productId;
       const query = { _id: new ObjectId(id) };
-      const update={
-        $set:{
+      const update = {
+        $set: {
           name: req.body.name,
           category: req.body.category,
           price: req.body.price,
@@ -149,12 +149,11 @@ async function run() {
           image: req.body.photo,
           email: req.body.email,
           date: req.body.date,
-        }
-      }
-      const result = await productsCollection.updateOne(query,update);
+        },
+      };
+      const result = await productsCollection.updateOne(query, update);
       res.send(result);
     });
-
 
     // orders related apis
     app.get("/orders", async (req, res) => {
@@ -190,13 +189,13 @@ async function run() {
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
-    // await client.close(); 
+    // await client.close();
   }
 }
 run().catch(console.dir);
 
 app.get("/", (req, res) => {
-  res.send("My server is comming very soooon.....");
+  res.send("Paw Mart server is running.....");
 });
 
 app.listen(port, () => {
