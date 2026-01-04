@@ -97,26 +97,38 @@ async function run() {
       res.send(result);
     });
     app.get("/products", async (req, res) => {
-      const email = req.query.email;
-      const category = req.query.category;
+      const { category, search, date, price, email } = req.query;
+      console.log(req.query);
+      console.log(category, search, date, price);
       const query = {};
       if (email) {
         query.email = email;
-      } else if (category && category != "All Categories") {
+      }
+      if (category) {
         query.category = category;
       }
-      const cursor = productsCollection.find(query).sort({
-        date: -1,
-      });
+      if (search) {
+        query.$or = [{ name: { $regex: search, $options: "i" } }, { location: { $regex: search, $options: "i" } }];
+      }
+      let sortByDate = -1;
+      if (date && date === "OldToNew") {
+        sortByDate = 1;
+      }
+      console.log(query);
+      let sortObj = { date: sortByDate };
+      if (price === "HighToLow") sortObj.price = -1;
+      else if (price === "LowToHigh") sortObj.price = 1;
+      console.log(sortObj);
+      const cursor = productsCollection.find(query).sort(sortObj);
       const result = await cursor.toArray();
       res.send(result);
     });
-    app.get("/search", async (req, res) => {
-      const search = req.query.search;
-      const query = { name: { $regex: search, $options: "i" } };
-      const result = await productsCollection.find(query).toArray();
-      res.send(result);
-    });
+    // app.get("/search", async (req, res) => {
+    //   const search = req.query.search;
+    //   const query = { name: { $regex: search, $options: "i" } };
+    //   const result = await productsCollection.find(query).toArray();
+    //   res.send(result);
+    // });
     app.get("/products/:productId", async (req, res) => {
       const id = req.params.productId;
       const query = { _id: new ObjectId(id) };
@@ -126,6 +138,7 @@ async function run() {
 
     app.post("/products", async (req, res) => {
       const product = req.body;
+      product.price = Number(product.price);
       const result = await productsCollection.insertOne(product);
       res.send(result);
     });
@@ -143,7 +156,7 @@ async function run() {
         $set: {
           name: req.body.name,
           category: req.body.category,
-          price: req.body.price,
+          price: Number(req.body.price),
           location: req.body.location,
           description: req.body.description,
           image: req.body.photo,
@@ -199,5 +212,5 @@ app.get("/", (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`The server is running on port ${port}`);
+  console.log(`The pawmart server is running on port ${port}`);
 });
