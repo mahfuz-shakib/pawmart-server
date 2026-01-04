@@ -97,7 +97,7 @@ async function run() {
       res.send(result);
     });
     app.get("/products", async (req, res) => {
-      const { category, search, date, price, email } = req.query;
+      const { category, search, date, price, email,limit,page } = req.query;
       console.log(req.query);
       console.log(category, search, date, price);
       const query = {};
@@ -119,9 +119,25 @@ async function run() {
       if (price === "HighToLow") sortObj.price = -1;
       else if (price === "LowToHigh") sortObj.price = 1;
       console.log(sortObj);
-      const cursor = productsCollection.find(query).sort(sortObj);
+      // Pagination
+      const pageNum = parseInt(page) || 1;
+      const limitNum = parseInt(limit) || 10;
+      const skip = (pageNum - 1) * limitNum;
+
+      // Get total count
+      const total = await productsCollection.countDocuments(query);
+
+      const cursor = productsCollection.find(query).sort(sortObj).skip(skip).limit(limitNum);
       const result = await cursor.toArray();
-      res.send(result);
+      res.send({
+        data: result,
+        pagination: {
+          page: pageNum,
+          limit: limitNum,
+          total,
+          totalPages: Math.ceil(total / limitNum),
+        },
+      });
     });
     // app.get("/search", async (req, res) => {
     //   const search = req.query.search;
